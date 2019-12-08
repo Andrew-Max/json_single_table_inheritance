@@ -1,3 +1,5 @@
+require 'active_record/json_validator/validator'
+
 module JsonSingleTableInheritance
   extend ActiveSupport::Concern
 
