@@ -1,0 +1,3 @@
+require 'json_single_table_inheritance/base'
+require 'json_single_table_inheritance/class_master_list'
+require 'json_single_table_inheritance/inheritable_seeder'
