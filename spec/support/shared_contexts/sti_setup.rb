@@ -1,30 +1,30 @@
 RSpec.shared_context "sti_setup_one", :shared_context => :metadata do
-  class ::TypeOne < ApplicationRecord
-    include SingleTableInheritable
+  class ::TypeOne < ActiveRecord::Base
+    include JsonSingleTableInheritance
     has_and_belongs_to_many :type_twos
     has_many :type_threes
     has_and_belongs_to_many :type_fours
     has_and_belongs_to_many :non_stis
   end
 
-  class ::TypeTwo < ApplicationRecord
-    include SingleTableInheritable
+  class ::TypeTwo < ActiveRecord::Base
+    include JsonSingleTableInheritance
     has_and_belongs_to_many :type_ones
     has_and_belongs_to_many :type_fours
   end
 
-  class ::TypeThree < ApplicationRecord
-    include SingleTableInheritable
+  class ::TypeThree < ActiveRecord::Base
+    include JsonSingleTableInheritance
     belongs_to :type_one
   end
 
-  class ::TypeFour < ApplicationRecord
-    include SingleTableInheritable
+  class ::TypeFour < ActiveRecord::Base
+    include JsonSingleTableInheritance
     has_and_belongs_to_many :type_twos
     has_and_belongs_to_many :type_ones
   end
 
-  class NonSti < ApplicationRecord
+  class NonSti < ActiveRecord::Base
     has_and_belongs_to_many :type_ones
   end
 

@@ -1,11 +1,11 @@
-require 'rails_helper'
+require 'spec_helper'
 
-describe SingleTableInheritable::InheritableSeeder do
+describe JsonSingleTableInheritance::InheritableSeeder do
   include_context "sti_setup_one"
   include_context "sti_setup_one_migrations"
 
   before do
-    SingleTableInheritable.initialize_single_table_arel_helpers
+    JsonSingleTableInheritance.initialize_single_table_arel_helpers
   end
 
   describe 'populate_attrs_for_instance!' do
@@ -34,7 +34,7 @@ describe SingleTableInheritable::InheritableSeeder do
         expect(sub_e.indigo).to    eq(nil)
 
         # to rescue from validations
-        seeder = SingleTableInheritable::InheritableSeeder
+        seeder = JsonSingleTableInheritance::InheritableSeeder
 
         [sub_a, sub_b, sub_c, sub_d, sub_e].each do |obj|
           begin
@@ -84,7 +84,7 @@ describe SingleTableInheritable::InheritableSeeder do
         expect(sub_e.indigo).to    eq(nil)
 
         # to rescue from validations
-        seeder = SingleTableInheritable::InheritableSeeder
+        seeder = JsonSingleTableInheritance::InheritableSeeder
 
         [sub_a, sub_b, sub_c, sub_d, sub_e].each do |obj|
           begin
@@ -125,7 +125,7 @@ describe SingleTableInheritable::InheritableSeeder do
       expect(::TypeThree::SubD.count).to be_zero
       expect(::TypeFour::SubE.count).to be_zero
 
-      expect { SingleTableInheritable::InheritableSeeder.seed! }.not_to raise_error
+      expect { JsonSingleTableInheritance::InheritableSeeder.seed! }.not_to raise_error
 
       expect(::TypeOne::SubA.count).to_not be_zero
       expect(::TypeOne::SubB.count).to_not be_zero

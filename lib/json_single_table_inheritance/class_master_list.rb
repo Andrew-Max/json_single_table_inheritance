@@ -16,7 +16,7 @@ module JsonSingleTableInheritance
     def self.build_sti_base_class_list
       ObjectSpace.
         each_object(Class).
-        select { |klass| klass.included_modules.include? SingleTableInheritable }.
+        select { |klass| klass.included_modules.include? JsonSingleTableInheritance }.
         map(&:to_s).
         reject { |klass| klass.include?("::") }.
         map(&:underscore).
