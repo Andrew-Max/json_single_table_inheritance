@@ -3,7 +3,61 @@ require 'active_record/json_validator/validator'
 module JsonSingleTableInheritance
   extend ActiveSupport::Concern
 
+  def self.initialize_single_table_arel_helpers
+    # this needs to get called once after the application is loaded and all classes are loaded
+    JsonSingleTableInheritance::ClassMasterList.sti_base_class_list.each do |receiving_class_name|
+      receiving_class = receiving_class_name.to_s.camelize.constantize
+      relationships_to_create = ClassMasterList.relations_lookup[receiving_class_name.to_sym][:relationships]
+
+      relationships_to_create.each do |relationship_to_create|
+        ClassMasterList.relations_lookup[relationship_to_create][:members].each do |relationship_to_create_member|
+
+          creation_class = "#{relationship_to_create.to_s.camelize}::#{relationship_to_create_member.to_s.singularize.camelize}".constantize
+
+          ar_association = receiving_class.reflect_on_all_associations.detect do |association|
+            association.class_name == relationship_to_create.to_s.camelize
+          end
+
+          receiving_class.class_eval do
+            if ar_association.to_s.downcase =~ /many/
+              # create has_many helper methods for sti subtypes
+              define_method "#{relationship_to_create_member.to_s.pluralize}" do
+                self.send(relationship_to_create.to_s.pluralize).where(type: creation_class.to_s)
+              end
+
+            else
+              # create belongs_to helper methods for sti subtypes
+              define_method "#{relationship_to_create_member.to_s.singularize}" do
+                object = self.send(relationship_to_create.to_s.singularize)
+                return object.class.to_s == creation_class.to_s ? object : nil
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+
   included do
+    def self.inherited(subclass)
+
+      subclass.class_eval do
+        # patch subclasses to validate based on their schema.
+        # Schemas are defined in subclasses with `define_schema`
+        validates :module_data,
+                  presence: false,
+                  json: {
+                    message: ->(errors) { errors },
+                    schema: lambda { self.class::SCHEMA.to_json }
+                  }
+
+        # a helper similar to ARs `where` only for json fields
+        scope :jwhere, lambda { |hash| where("module_data @> ?", hash.to_json) }
+      end
+
+      super
+    end
+
     def self.descendants
       ObjectSpace.each_object(Class).select { |klass| klass < self }
     end
@@ -11,99 +65,36 @@ module JsonSingleTableInheritance
     def self.define_schema(hash)
       class_eval do
         const_set(:SCHEMA, hash.with_indifferent_access)
+
+        json_attrs = self::SCHEMA["properties"]
+
+        #do we even use these anymore?
         class_variable_set(:@@json_attrs, self::SCHEMA["properties"])
         class_variable_set(:@@json_required, self::SCHEMA["required"])
+
+        initialize_attr_getters(json_attrs.keys)
+        initialize_attr_setters(json_attrs.keys)
       end
     end
 
-    def self.inherited(subclass)
-      subclass.class_eval do
-        # probably could do some more general validations
-          #patch subclasses to validate based on their schema
-          validates :module_data,
-                    presence: false,
-                    json: {
-                      message: ->(errors) { errors },
-                      schema: lambda { self.class::SCHEMA.to_json }
-                    }
-      end
+    private
 
-      def method_missing(method_name, *args, &block)
-        existing_attr = lookup_attr_method(method_name, args)
-        if existing_attr
-          return existing_attr == NilClass ? nil : existing_attr
-        end
-
-        existing_relationship = lookup_relationship_method(method_name)
-        if existing_relationship
-          return existing_relationship == NilClass ? nil : existing_relationship
-        end
-
-        super
-      end
-
-      def respond_to_missing?(method_name, *args)
-        if self.class.class_variables.include? :@@json_attrs
-          self.class.class_variable_get(:@@json_attrs).keys.include? method_name.to_s.gsub("=", "") or super
-        end
-
-        # using define method here will remove the entire necessity for this
-        # this should be patched for the relationships case but not sure how
-      end
-
-      private
-
-      def lookup_attr_method(method_name, args)
-        # patch subclasses to check the attrs of it's module data on method missing
-        # prefer to handle this with define_method
-        if self.class.class_variable_get(:@@json_attrs).keys.include? method_name.to_s.gsub("=", "")
-          if method_name.to_s.include? '='
-            self.module_data[method_name.to_s.gsub("=", "")] = args.first
-
-            return args.first.nil? ? NilClass : args.first
-          else
-            return self.module_data[method_name.to_s] || NilClass
-          end
+    def self.initialize_attr_getters(attr_names)
+      # patches including classes to have getters for their json attr names
+      attr_names.each do |attr_name|
+        define_method attr_name do
+          self.module_data[attr_name]
         end
       end
+    end
 
-      def lookup_relationship_method(method_name)
-        self_abstract, self_concrete = self.class.to_s.split("::").map(&:underscore)
-
-        relationships = ClassMasterList.relations_lookup[self_abstract.to_sym][:relationships]
-
-        #patch subclasses to allow AR helpers for querying other subtypes
-        # prefer to handle this with define_method
-        relationships.each do |relationship|
-          if ClassMasterList.relations_lookup[relationship].present?
-            if ClassMasterList.relations_lookup[relationship][:members].include?(method_name.to_s.singularize.to_sym)
-              klass = "#{relationship.to_s.camelize}::#{method_name.to_s.singularize.camelize}".constantize
-
-              relation = self.class.reflect_on_all_associations.detect do |relation|
-                relation.class_name == relationship.to_s.camelize
-              end
-
-              relation_type = relation.to_s.split("::").last.split(':').first.gsub("Reflection", "").downcase
-              method_str = method_name.to_s
-              is_plural = method_str.pluralize == method_str
-
-              # think about what happens here for always plural models
-              if relation_type =~ /many/
-                break unless is_plural
-                return self.send(relationship.to_s.pluralize).where(type: klass.to_s)
-              else
-                break if is_plural
-
-                rel = self.send(relationship.to_s)
-                return rel.class.to_s == klass.to_s ? rel : NilClass
-              end
-
-            end
-          end
+    def self.initialize_attr_setters(attr_names)
+      # patches including classes to have setters for their json attr names
+      attr_names.each do |attr_name|
+        define_method "#{attr_name}=" do |new_value|
+          self.module_data[attr_name] = new_value
         end
       end
-
-      super
     end
   end
 end
