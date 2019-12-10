@@ -1,22 +1,19 @@
 # frozen_string_literal: true
-z = File.expand_path('lib', __dir__)
-$LOAD_PATH.unshift z
+$LOAD_PATH.unshift File.expand_path('lib', __dir__)
 
-# require 'active_support/all'
+require 'pry-byebug'
+require 'active_support/all'
 require 'rspec'
 # require 'mysql2'
 require 'pg'
-
-require 'pry-byebug'
+require 'faker'
 require 'activerecord_json_validator'
 
-# Require our macros and extensions
-x = Dir[File.expand_path('../spec/support/macros/**/*.rb', __dir__)]
-x.map(&method(:require))
-y = Dir[File.expand_path('../spec/support/**/*.rb', __dir__)]
-y.map(&method(:require))
 
-binding.pry
+# Require our macros and extensions
+Dir[File.expand_path('../lib/**/*.rb', __dir__)].map(&method(:require))
+Dir[File.expand_path('../spec/support/macros/**/*.rb', __dir__)].map(&method(:require))
+Dir[File.expand_path('../spec/support/**/*.rb', __dir__)].map(&method(:require))
 
 RSpec.configure do |config|
   # Include our macros
