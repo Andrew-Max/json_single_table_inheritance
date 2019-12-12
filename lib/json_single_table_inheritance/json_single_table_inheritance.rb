@@ -40,6 +40,9 @@ module JsonSingleTableInheritance
 
   included do
     def self.inherited(subclass)
+      # define subclass name as constant on global object
+      # probably smarter way to do this? Something zeitwerk?
+      Object.const_set(subclass.to_s.split("::").last, subclass)
 
       subclass.class_eval do
         # patch subclasses to validate based on their schema.

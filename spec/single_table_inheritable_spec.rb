@@ -15,6 +15,16 @@ describe JsonSingleTableInheritance do
     let(:sub_d) { TypeThree::SubD.new }
     let(:sub_e) { TypeFour::SubE.new }
 
+    it "has constants for its sub classes" do
+      expect(defined? SubA).to_not be nil
+      expect(defined? SubB).to_not be nil
+      expect(defined? SubC).to_not be nil
+      expect(defined? SubD).to_not be nil
+      expect(defined? SubE).to_not be nil
+
+      expect(defined? SubZ).to be nil
+    end
+
     it "has been patched with getter methods for it's module_data attrs" do
       expect(sub_a).to respond_to("zebra")
       expect(sub_a).to_not respond_to("apple")
