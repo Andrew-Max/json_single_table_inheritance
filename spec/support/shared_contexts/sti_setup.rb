@@ -15,7 +15,7 @@ RSpec.shared_context "sti_setup_one", :shared_context => :metadata do
 
   class ::TypeThree < ActiveRecord::Base
     include JsonSingleTableInheritance
-    belongs_to :type_one, optional: true
+    belongs_to :type_one
   end
 
   class ::TypeFour < ActiveRecord::Base

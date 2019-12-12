@@ -95,7 +95,7 @@ module JsonSingleTableInheritance
 
       instance.errors.messages.each do |error_key, error_value|
         if error_key == :module_data
-          fix_attr_based_errors_for_instance(instance)
+          JsonSingleTableInheritance::InheritableSeeder.populate_attrs_for_instance!(instance)
 
         elsif error_value.include? "must exist"
           fix_belongs_to_based_errors_for_instance(instance, error_key)
@@ -110,13 +110,6 @@ module JsonSingleTableInheritance
       end
 
       skip_sub_object_creation
-    end
-
-
-    def self.fix_attr_based_errors_for_instance(instance)
-      JsonSingleTableInheritance::InheritableSeeder.populate_attrs_for_instance!(instance)
-
-      instance.save!
     end
 
     def self.fix_belongs_to_based_errors_for_instance(instance, error_key)
