@@ -24,52 +24,6 @@ module JsonSingleTableInheritance
       end
     end
 
-    private
-
-    def self.create_relationship_for_instance(instance, relationship_type, relation_member, num_to_create)
-      p "Creating a #{relation_member} for a #{instance.class}"
-
-      num_to_create.times do |n|
-        ar_association = instance.class.reflect_on_all_associations.detect do |association|
-          association.class_name == relationship_type.to_s.camelize
-        end
-
-        if ar_association.to_s.downcase =~ /many/
-          relation_name = relation_member.to_s.pluralize
-          sub_instance = instance.send(relation_name).create
-        else
-          klass_to_create = "#{relationship_type.to_s.camelize}::#{relation_member.to_s.camelize}".constantize
-          sub_instance = klass_to_create.create
-          sub_instance.send(instance.class.to_s.split("::").last.underscore.pluralize).create
-        end
-
-        JsonSingleTableInheritance::InheritableSeeder.populate_attrs_for_instance!(sub_instance)
-      end
-    end
-
-    def self.fix_errors_on_instance_and_determine_next_step(instance)
-      klass = instance.class
-      skip_sub_object_creation = false
-
-      instance.errors.messages.each do |error_key, error_value|
-        if error_key == :module_data
-          fix_attr_based_errors_for_instance(instance)
-
-        elsif error_value.include? "must exist"
-          fix_belongs_to_based_errors_for_instance(instance, error_key)
-          skip_sub_object_creation = true
-
-        else
-          p "============================="
-          p "There was an unhandled error on instance creation: #{error_key} : #{error_value.first}"
-          p "============================="
-          skip_sub_object_creation = true
-        end
-      end
-
-      skip_sub_object_creation
-    end
-
     def self.populate_attrs_for_instance!(instance, only_required=false)
       klass = instance.class
       json_attrs = klass.class_variable_get(:@@json_attrs)
@@ -102,10 +56,66 @@ module JsonSingleTableInheritance
       end
 
       instance.save!
+
+      instance
     end
+
+    def self.generate_valid_instance_of_class!(klass, only_required=false)
+      populate_attrs_for_instance!(klass.new, only_required)
+    end
+
+    private
+
+    def self.create_relationship_for_instance(instance, relationship_type, relation_member, num_to_create)
+      p "Creating a #{relation_member} for a #{instance.class}"
+
+      num_to_create.times do |n|
+        ar_association = instance.class.reflect_on_all_associations.detect do |association|
+          association.class_name == relationship_type.to_s.camelize
+        end
+
+        if ar_association.to_s.downcase =~ /many/
+          relation_name = relation_member.to_s.pluralize
+          sub_instance = instance.send(relation_name).create
+        else
+          klass_to_create = "#{relationship_type.to_s.camelize}::#{relation_member.to_s.camelize}".constantize
+          sub_instance = generate_valid_instance_of_class!(klass_to_create)
+
+          sub_instance_rel_id = sub_instance.class.to_s.split("::").first.underscore + "_id="
+          instance.send(sub_instance_rel_id, sub_instance.id)
+        end
+
+        JsonSingleTableInheritance::InheritableSeeder.populate_attrs_for_instance!(sub_instance)
+      end
+    end
+
+    def self.fix_errors_on_instance_and_determine_next_step(instance)
+      klass = instance.class
+      skip_sub_object_creation = false
+
+      instance.errors.messages.each do |error_key, error_value|
+        if error_key == :module_data
+          fix_attr_based_errors_for_instance(instance)
+
+        elsif error_value.include? "must exist"
+          fix_belongs_to_based_errors_for_instance(instance, error_key)
+          skip_sub_object_creation = true
+
+        else
+          p "============================="
+          p "There was an unhandled error on instance creation: #{error_key} : #{error_value.first}"
+          p "============================="
+          skip_sub_object_creation = true
+        end
+      end
+
+      skip_sub_object_creation
+    end
+
 
     def self.fix_attr_based_errors_for_instance(instance)
       JsonSingleTableInheritance::InheritableSeeder.populate_attrs_for_instance!(instance)
+
       instance.save!
     end
 

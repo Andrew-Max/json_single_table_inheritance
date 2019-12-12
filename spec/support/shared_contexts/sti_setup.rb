@@ -4,7 +4,7 @@ RSpec.shared_context "sti_setup_one", :shared_context => :metadata do
     has_and_belongs_to_many :type_twos
     has_many :type_threes
     has_and_belongs_to_many :type_fours
-    has_and_belongs_to_many :non_stis
+    has_and_belongs_to_many :non_sti_objects
   end
 
   class ::TypeTwo < ActiveRecord::Base
@@ -15,7 +15,7 @@ RSpec.shared_context "sti_setup_one", :shared_context => :metadata do
 
   class ::TypeThree < ActiveRecord::Base
     include JsonSingleTableInheritance
-    belongs_to :type_one
+    belongs_to :type_one, optional: true
   end
 
   class ::TypeFour < ActiveRecord::Base
@@ -24,7 +24,7 @@ RSpec.shared_context "sti_setup_one", :shared_context => :metadata do
     has_and_belongs_to_many :type_ones
   end
 
-  class NonSti < ActiveRecord::Base
+  class NonStiObject < ActiveRecord::Base
     has_and_belongs_to_many :type_ones
   end
 
@@ -87,6 +87,9 @@ end
 RSpec.shared_context "sti_setup_one_migrations", :shared_context => :metadata do
   before do
     run_migration do
+      create_table :non_sti_objects do |t|
+      end
+
       create_table :type_ones do |t|
         t.string   :type, null: false
         t.jsonb    :module_data, default: {}
@@ -110,6 +113,7 @@ RSpec.shared_context "sti_setup_one_migrations", :shared_context => :metadata do
 
       create_join_table :type_ones, :type_twos
       create_join_table :type_ones, :type_fours
+      create_join_table :type_ones, :non_sti_objects
       create_join_table :type_fours, :type_twos
     end
   end
