@@ -1,5 +1,9 @@
 module JsonSingleTableInheritance
   class ClassMasterList
+    def self.hello
+      p 'hello'
+    end
+
     def self.sti_base_class_list
       # a list of STI base classes which have their own tables
       @@sti_base_class_list ||= build_sti_base_class_list
