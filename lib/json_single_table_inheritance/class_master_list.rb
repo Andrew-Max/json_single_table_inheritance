@@ -1,7 +1,7 @@
 module JsonSingleTableInheritance
   class ClassMasterList
     def self.hello
-      p 'hello'
+      p 'hellox'
     end
 
     def self.sti_base_class_list
