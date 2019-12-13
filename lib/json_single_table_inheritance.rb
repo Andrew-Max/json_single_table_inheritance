@@ -1,12 +1,9 @@
-# require 'json-schema'
-# require 'active_record/json_validator/validator'
-
 require "zeitwerk"
 require_relative "json_single_table_inheritance/class_master_list"
 require_relative "json_single_table_inheritance/inheritable_seeder"
 
 loader = Zeitwerk::Loader.for_gem
-loader.setup # ready!
+loader.setup
 
 module JsonSingleTableInheritance
   extend ActiveSupport::Concern
@@ -79,7 +76,6 @@ module JsonSingleTableInheritance
 
         json_attrs = self::SCHEMA["properties"]
 
-        #do we even use these anymore?
         class_variable_set(:@@json_attrs, self::SCHEMA["properties"])
         class_variable_set(:@@json_required, self::SCHEMA["required"])
 
