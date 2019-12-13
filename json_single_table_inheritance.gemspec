@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.email       = 'andrew.max89@gmail.com'
   spec.files       = ["lib/json_single_table_inheritance.rb"]
   spec.homepage    = nil
-  spec.license       = 'AGPL-3.0-or-later'
+  spec.license       = 'MIT'
 
   spec.require_paths = ["lib"]
 
