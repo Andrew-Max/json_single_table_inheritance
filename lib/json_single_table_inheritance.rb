@@ -10,8 +10,6 @@ loader.setup # ready!
 
 module JsonSingleTableInheritance
   extend ActiveSupport::Concern
-  # include ClassMasterList
-  # include InheritableSeeder
 
   def self.initialize_single_table_arel_helpers
     # this needs to get called once after the application is loaded and all classes are loaded
