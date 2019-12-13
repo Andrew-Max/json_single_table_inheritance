@@ -24,7 +24,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'faker', '~> 2.7'
   # spec.add_development_dependency 'mysql2'
   spec.add_development_dependency 'activesupport', '>= 4.2.0', '< 7'
-  spec.add_development_dependency 'rubocop', '~> 0.28'
+  spec.add_development_dependency 'rubocop', '~> 0.77'
   spec.add_dependency 'activerecord', '>= 4.2.0', '< 7'
 
   spec.add_dependency 'activerecord_json_validator', '~> 1.3.0'
