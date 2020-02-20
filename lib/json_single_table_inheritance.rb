@@ -9,14 +9,13 @@ module JsonSingleTableInheritance
   extend ActiveSupport::Concern
 
   def self.initialize_single_table_arel_helpers
-    # this needs to get called once after the application is loaded and all classes are loaded
-    JsonSingleTableInheritance::ClassMasterList.sti_base_class_list.each do |receiving_class_name|
+    JsonSingleTableInheritance::ClassMasterList.base_class_list.each do |receiving_class_name|
       receiving_class = receiving_class_name.to_s.camelize.constantize
-      relationships_to_create = ClassMasterList.relations_lookup[receiving_class_name.to_sym][:relationships]
 
-      relationships_to_create.each do |relationship_to_create|
+      next unless ClassMasterList.relations_lookup[receiving_class_name]
+
+      ClassMasterList.relations_lookup[receiving_class_name][:relationships].each do |relationship_to_create|
         ClassMasterList.relations_lookup[relationship_to_create][:members].each do |relationship_to_create_member|
-
           creation_class = "#{relationship_to_create.to_s.camelize}::#{relationship_to_create_member.to_s.singularize.camelize}".constantize
 
           ar_association = receiving_class.reflect_on_all_associations.detect do |association|
@@ -45,22 +44,62 @@ module JsonSingleTableInheritance
 
   included do
     def self.inherited(subclass)
-      # define subclass name as constant on global object
-      # probably smarter way to do this? Something zeitwerk?
-      Object.const_set(subclass.to_s.split("::").last, subclass)
+      begin
+        #check to make sure if it exists, throws error and rescues with constant creation otherwise
+        subclass.to_s.split("::").last.constantize
+      rescue
+        # define subclass name as constant on global object
+        # probably smarter way to do this? Something zeitwerk?
+        Object.const_set(subclass.to_s.split("::").last, subclass)
 
-      subclass.class_eval do
-        # patch subclasses to validate based on their schema.
-        # Schemas are defined in subclasses with `define_schema`
-        validates :module_data,
-                  presence: false,
-                  json: {
-                    message: ->(errors) { errors },
-                    schema: lambda { self.class::SCHEMA.to_json }
-                  }
+        subclass.class_eval do
+          # patch subclasses to validate based on their schema.
+          # Schemas are defined in subclasses with `define_schema`
+          validates :module_data,
+                    presence: false,
+                    json: {
+                      message: ->(errors) { errors },
+                      schema: lambda { cleaned_schema }
+                    }
 
-        # a helper similar to ARs `where` only for json fields
-        scope :jwhere, lambda { |hash| where("module_data @> ?", hash.to_json) }
+          # a helper similar to ARs `where` only for json fields
+          scope :jwhere, lambda { |hash| where("module_data @> ?", hash.to_json) }
+
+          def initialize(params)
+            super
+
+            self.class::SCHEMA["properties"].keys.each do |attr|
+              unless self.module_data[attr]
+                if self.class::SCHEMA["required"].include? attr
+                  self.module_data[attr] = "REQUIRED: #{self.class::SCHEMA["properties"][attr]["type"]}"
+                else
+                  self.module_data[attr] = nil
+                end
+              end
+            end
+          end
+
+          private
+
+          def cleaned_schema
+            schema = self.class::SCHEMA.to_json
+
+            hash_schema = JSON.parse(schema)
+            properties = hash_schema["properties"]
+            required = schema['required']
+
+            properties.each do |property, value|
+              unless self.module_data[property]
+                unless required.include?(property)
+                  properties.delete property
+                end
+              end
+            end
+
+            hash_schema["properties"] = properties
+            hash_schema.to_json
+          end
+        end
       end
 
       super
@@ -104,6 +143,7 @@ module JsonSingleTableInheritance
       end
     end
   end
+
 end
 
 loader.eager_load

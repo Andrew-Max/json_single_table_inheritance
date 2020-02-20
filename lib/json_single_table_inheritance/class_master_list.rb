@@ -1,9 +1,5 @@
 module JsonSingleTableInheritance
   class ClassMasterList
-    def self.hello
-      p 'hellox'
-    end
-
     def self.sti_base_class_list
       # a list of STI base classes which have their own tables
       @@sti_base_class_list ||= build_sti_base_class_list
@@ -13,6 +9,11 @@ module JsonSingleTableInheritance
       # a lookup table including the subclasses of each baseclasses
       # and what relationships each STI class has to other STI classes
       @@relations_lookup ||= build_relations_lookup
+    end
+
+    def self.base_class_list
+      # a list of STI base classes which have their own tables
+      @@base_class_list ||= build_base_class_list
     end
 
     private
@@ -27,13 +28,26 @@ module JsonSingleTableInheritance
         map(&:to_sym)
     end
 
+    def self.build_base_class_list
+      models = ActiveRecord::Base.
+        descendants.
+        map(&:name).
+        reject { |klass| klass.include?("::") }.
+        reject { |klass| klass.include?("HABTM") }.
+        reject { |klass| klass.include?("WP") }.
+        map(&:underscore).
+        map(&:to_sym)
+
+      models.delete_at 0
+
+      models
+    end
 
     def self.build_relations_lookup
       @@relations_lookup = {}
 
-      sti_base_class_list.each do |class_name|
+      base_class_list.each do |class_name|
         @@relations_lookup[class_name] = {}
-
         build_relation_list_for_class(class_name)
         build_members_list_for_class(class_name)
       end
@@ -50,12 +64,11 @@ module JsonSingleTableInheritance
           map(&:underscore).
           map(&:to_sym)
 
-        @@relations_lookup[class_name][:relationships] = (relation_list & sti_base_class_list)
+        @@relations_lookup[class_name][:relationships] = (relation_list & JsonSingleTableInheritance::ClassMasterList.sti_base_class_list)
     end
 
     def self.build_members_list_for_class(class_name)
         klass = class_name.to_s.camelize.constantize
-
         members = klass.descendants.map(&:to_s).
           map{ |descendant| descendant.gsub("#{class_name.to_s.camelize}::", "") }.
           map(&:underscore).
