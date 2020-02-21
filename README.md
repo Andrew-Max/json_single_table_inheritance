@@ -16,6 +16,16 @@ add to your gemfile:
 `gem "json_sti"`
 
 
+You will need to create an intializer that runs a `config.to_prepare` block which will setup all the helper methods on application start
+
+```
+#config/initializers/preload_json_sti.rb
+
+Rails.application.config.to_prepare do
+  Zeitwerk::Loader.eager_load_all
+  JsonSti.initialize_single_table_arel_helpers
+end
+```
 
 ## Rails App Integration
 
@@ -105,3 +115,9 @@ You can
 
 - you can automatically seed your app for all of your JSON STI classes with
        `JsonSti::InheritableSeeder.seed!`
+
+## Contributions / Contact
+
+If you are interested in contributing, feel free to submit pull requests.
+
+Feel free to reach out with any questions, or if you would like help integrating this library: andrew.n.max@protonmail.com
