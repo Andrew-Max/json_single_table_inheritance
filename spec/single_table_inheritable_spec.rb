@@ -14,6 +14,7 @@ describe JsonSingleTableInheritance do
     let(:sub_c) { TypeTwo::SubC.new }
     let(:sub_d) { TypeThree::SubD.new }
     let(:sub_e) { TypeFour::SubE.new }
+    let(:non_sti) { NonStiObject.new }
 
     it "has constants for its sub classes" do
       expect(defined? SubA).to_not be nil
@@ -113,6 +114,12 @@ describe JsonSingleTableInheritance do
       expect(sub_e).to respond_to("sub_cs")
       expect(sub_e).to_not respond_to("sub_ds")
       expect(sub_e).to_not respond_to("sub_es")
+
+      expect(non_sti).to respond_to("sub_as")
+      expect(non_sti).to respond_to("sub_bs")
+      expect(non_sti).to_not respond_to("sub_cs")
+      expect(non_sti).to_not respond_to("sub_ds")
+      expect(non_sti).to_not respond_to("sub_es")
     end
 
     it "has been patched with ar like belongs helper methods for the sub types of the classes it has relationships with" do
