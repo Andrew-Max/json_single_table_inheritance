@@ -1,19 +1,19 @@
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'json_single_table_inheritance/version'
+require 'json_sti/version'
 
 Gem::Specification.new do |spec|
-  spec.name        = 'json_single_table_inheritance'
-  spec.version     =  JsonSingleTableInheritance::VERSION
+  spec.name        = 'json_sti'
+  spec.version     =  JsonSti::VERSION
   spec.date        = '2019-12-08'
   spec.summary     = "A scheme for single table inheritance with ActiveRecord which puts all class specific attributes in a json blob, and allows validations"
   spec.description = "A common argument against STI in rails is that the tables eventually get cluttered with class specific columns. By keeping all subtype specific attrs in json, you completely avoid table bloat while keeping all the advantages of AR and a relational database"
   spec.authors     = ["Andrew Max"]
   spec.email       = 'andrew.max89@gmail.com'
   spec.files       = [
-    "lib/json_single_table_inheritance.rb",
-    "lib/json_single_table_inheritance/class_master_list.rb",
-    "lib/json_single_table_inheritance/inheritable_seeder.rb"
+    "lib/json_sti.rb",
+    "lib/json_sti/class_master_list.rb",
+    "lib/json_sti/inheritable_seeder.rb"
   ]
 
   spec.homepage    = nil

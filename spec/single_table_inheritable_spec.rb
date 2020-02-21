@@ -1,12 +1,12 @@
 require 'spec_helper'
 
-describe JsonSingleTableInheritance do
+describe JsonSti do
   include_context "sti_setup_one"
   include_context "sti_setup_one_migrations"
 
   describe 'A class which includes the module' do
     before do
-      JsonSingleTableInheritance.initialize_single_table_arel_helpers
+      JsonSti.initialize_single_table_arel_helpers
     end
 
     let(:sub_a) { TypeOne::SubA.new }

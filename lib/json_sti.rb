@@ -3,14 +3,14 @@ require "zeitwerk"
 loader = Zeitwerk::Loader.for_gem
 loader.setup
 
-require_relative "json_single_table_inheritance/class_master_list"
-require_relative "json_single_table_inheritance/inheritable_seeder"
+require_relative "json_sti/class_master_list"
+require_relative "json_sti/inheritable_seeder"
 
-module JsonSingleTableInheritance
+module JsonSti
   extend ActiveSupport::Concern
 
   def self.initialize_single_table_arel_helpers
-    JsonSingleTableInheritance::ClassMasterList.base_class_list.each do |receiving_class_name|
+    JsonSti::ClassMasterList.base_class_list.each do |receiving_class_name|
       receiving_class = receiving_class_name.to_s.camelize.constantize
 
       next unless ClassMasterList.relations_lookup[receiving_class_name]

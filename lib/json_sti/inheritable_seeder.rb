@@ -1,7 +1,7 @@
-module JsonSingleTableInheritance
+module JsonSti
   class InheritableSeeder
     def self.seed!(num_to_create=3)
-      relations_lookup = JsonSingleTableInheritance::ClassMasterList.relations_lookup
+      relations_lookup = JsonSti::ClassMasterList.relations_lookup
 
       relations_lookup.each do |type, info|
         info[:members].each do |member|
@@ -85,7 +85,7 @@ module JsonSingleTableInheritance
           instance.send(sub_instance_rel_id, sub_instance.id)
         end
 
-        JsonSingleTableInheritance::InheritableSeeder.populate_attrs_for_instance!(sub_instance)
+        JsonSti::InheritableSeeder.populate_attrs_for_instance!(sub_instance)
       end
     end
 
@@ -95,7 +95,7 @@ module JsonSingleTableInheritance
 
       instance.errors.messages.each do |error_key, error_value|
         if error_key == :module_data
-          JsonSingleTableInheritance::InheritableSeeder.populate_attrs_for_instance!(instance)
+          JsonSti::InheritableSeeder.populate_attrs_for_instance!(instance)
 
         elsif error_value.include? "must exist"
           fix_belongs_to_based_errors_for_instance(instance, error_key)
@@ -119,7 +119,7 @@ module JsonSingleTableInheritance
       p "creating #{sub_type_klass.to_s} belongs to for #{instance.class.to_s}"
       new_sub_instance = instance.send("#{error_key}=", sub_type_klass.create)
 
-      JsonSingleTableInheritance::InheritableSeeder.populate_attrs_for_instance!(new_sub_instance)
+      JsonSti::InheritableSeeder.populate_attrs_for_instance!(new_sub_instance)
     end
   end
 end

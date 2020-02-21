@@ -13,7 +13,7 @@ Storing multiple classes inherited from a common parent on a single table is com
 
 add to your gemfile:
 
-`gem "json_single_table_inheritance"`
+`gem "json_sti"`
 
 
 
@@ -28,7 +28,7 @@ In your top level models directory, you will have the base class definitions whi
 
 ```ruby
 class Vehicle < ApplicationRecord
-  include JsonSingleTableInheritance # this adds all of the JSON STI functionality to the class
+  include JsonSti # this adds all of the JSON STI functionality to the class
 
   has_and_belongs_to_many :vehicle_occupants
 
@@ -80,7 +80,7 @@ class Vehicle::Automobile < Vehicle
 end
 ```
 
-The `JsonSingleTableInheritance` module then provides some utilities for dealing with these objects.
+The `JsonSti` module then provides some utilities for dealing with these objects.
 
 You can
 
@@ -104,4 +104,4 @@ You can
        `driver.airplanes # returns only members of the vehicles table with type == Vehicle::Airplane`
 
 - you can automatically seed your app for all of your JSON STI classes with
-       `JsonSingleTableInheritance::InheritableSeeder.seed!`
+       `JsonSti::InheritableSeeder.seed!`

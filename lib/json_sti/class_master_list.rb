@@ -1,4 +1,4 @@
-module JsonSingleTableInheritance
+module JsonSti
   class ClassMasterList
     def self.sti_base_class_list
       # a list of STI base classes which have their own tables
@@ -21,7 +21,7 @@ module JsonSingleTableInheritance
     def self.build_sti_base_class_list
       ObjectSpace.
         each_object(Class).
-        select { |klass| klass.included_modules.include? JsonSingleTableInheritance }.
+        select { |klass| klass.included_modules.include? JsonSti }.
         map(&:to_s).
         reject { |klass| klass.include?("::") }.
         map(&:underscore).
@@ -61,7 +61,7 @@ module JsonSingleTableInheritance
           map(&:underscore).
           map(&:to_sym)
 
-        @@relations_lookup[class_name][:relationships] = (relation_list & JsonSingleTableInheritance::ClassMasterList.sti_base_class_list)
+        @@relations_lookup[class_name][:relationships] = (relation_list & JsonSti::ClassMasterList.sti_base_class_list)
     end
 
     def self.build_members_list_for_class(class_name)

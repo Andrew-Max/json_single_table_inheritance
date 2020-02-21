@@ -1,6 +1,6 @@
 RSpec.shared_context "sti_setup_one", :shared_context => :metadata do
   class ::TypeOne < ActiveRecord::Base
-    include JsonSingleTableInheritance
+    include JsonSti
     has_and_belongs_to_many :type_twos
     has_many :type_threes
     has_and_belongs_to_many :type_fours
@@ -8,18 +8,18 @@ RSpec.shared_context "sti_setup_one", :shared_context => :metadata do
   end
 
   class ::TypeTwo < ActiveRecord::Base
-    include JsonSingleTableInheritance
+    include JsonSti
     has_and_belongs_to_many :type_ones
     has_and_belongs_to_many :type_fours
   end
 
   class ::TypeThree < ActiveRecord::Base
-    include JsonSingleTableInheritance
+    include JsonSti
     belongs_to :type_one
   end
 
   class ::TypeFour < ActiveRecord::Base
-    include JsonSingleTableInheritance
+    include JsonSti
     has_and_belongs_to_many :type_twos
     has_and_belongs_to_many :type_ones
   end

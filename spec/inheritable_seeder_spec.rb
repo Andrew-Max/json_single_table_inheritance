@@ -1,11 +1,11 @@
 require 'spec_helper'
 
-describe JsonSingleTableInheritance::InheritableSeeder do
+describe JsonSti::InheritableSeeder do
   include_context "sti_setup_one"
   include_context "sti_setup_one_migrations"
 
   before do
-    JsonSingleTableInheritance.initialize_single_table_arel_helpers
+    JsonSti.initialize_single_table_arel_helpers
   end
 
   describe 'populate_attrs_for_instance!' do
@@ -34,7 +34,7 @@ describe JsonSingleTableInheritance::InheritableSeeder do
         expect(sub_e.indigo).to    eq(nil)
 
         # to rescue from validations
-        seeder = JsonSingleTableInheritance::InheritableSeeder
+        seeder = JsonSti::InheritableSeeder
 
         [sub_a, sub_b, sub_c, sub_d, sub_e].each do |obj|
           begin
@@ -84,7 +84,7 @@ describe JsonSingleTableInheritance::InheritableSeeder do
         expect(sub_e.indigo).to    eq(nil)
 
         # to rescue from validations
-        seeder = JsonSingleTableInheritance::InheritableSeeder
+        seeder = JsonSti::InheritableSeeder
 
         [sub_a, sub_b, sub_c, sub_d, sub_e].each do |obj|
           begin
@@ -125,7 +125,7 @@ describe JsonSingleTableInheritance::InheritableSeeder do
       expect(::TypeThree::SubD.count).to be_zero
       expect(::TypeFour::SubE.count).to be_zero
 
-      expect { JsonSingleTableInheritance::InheritableSeeder.seed! }.not_to raise_error
+      expect { JsonSti::InheritableSeeder.seed! }.not_to raise_error
 
       expect(::TypeOne::SubA.count).to_not be_zero
       expect(::TypeOne::SubB.count).to_not be_zero
