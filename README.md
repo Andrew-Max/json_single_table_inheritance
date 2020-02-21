@@ -1,4 +1,4 @@
-## What does it do
+## What does it do?
 
 *Short Version:* A flexible single table inheritance(STI) framework that uses postgres JSON fields to avoid issues with column bloat and allow relational schemas and ActiveRecord without enforcing specific attributes for members of a table.
 
@@ -90,18 +90,18 @@ You can
 - you can call json attr getters and setters directly on objects like normal ActiveRecord attrs
 
   eg:  `plane = Airplane.new`
-      
+
        `plane.tail_number = "N328KF"`
-      
+
        `puts plane.tail_number`
 
 - you can call relation finders on parent and subtypes
 
   eg:  `driver = VehicleOccupant.first`
-        
+
         driver.vehicles # returns vehicles of all types`
-        
+
        `driver.airplanes # returns only members of the vehicles table with type == Vehicle::Airplane`
 
-- you can automatically seed your app for all of your JSON STI classes with                                          
+- you can automatically seed your app for all of your JSON STI classes with
        `JsonSingleTableInheritance::InheritableSeeder.seed!`

@@ -13,7 +13,8 @@ describe JsonSingleTableInheritance::ClassMasterList do
   describe 'build_relations_lookup' do
     it "creates an accurate map of the sti classes in the app and their members and relationships" do
       relation_map = JsonSingleTableInheritance::ClassMasterList.relations_lookup
-      expect(relation_map.keys).to eq(JsonSingleTableInheritance::ClassMasterList.sti_base_class_list)
+
+      expect(relation_map.keys).to eq(JsonSingleTableInheritance::ClassMasterList.base_class_list)
 
       expect(relation_map[:type_one][:relationships]).to contain_exactly(:type_two, :type_three, :type_four)
       expect(relation_map[:type_one][:members]).to contain_exactly(:sub_a, :sub_b)
@@ -26,6 +27,9 @@ describe JsonSingleTableInheritance::ClassMasterList do
 
       expect(relation_map[:type_four][:relationships]).to contain_exactly(:type_two, :type_one)
       expect(relation_map[:type_four][:members]).to contain_exactly(:sub_e)
+
+      expect(relation_map[:non_sti_object][:relationships]).to contain_exactly(:type_one)
+      expect(relation_map[:non_sti_object][:members]).to be_empty
     end
   end
 end

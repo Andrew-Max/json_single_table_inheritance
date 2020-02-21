@@ -36,11 +36,8 @@ module JsonSingleTableInheritance
         reject { |klass| klass.include?("HABTM") }.
         reject { |klass| klass.include?("WP") }.
         map(&:underscore).
-        map(&:to_sym)
-
-      models.delete_at 0
-
-      models
+        map(&:to_sym).
+        tap { |models| models.delete :application_record}
     end
 
     def self.build_relations_lookup
