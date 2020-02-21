@@ -1,9 +1,10 @@
 require "zeitwerk"
-require_relative "json_single_table_inheritance/class_master_list"
-require_relative "json_single_table_inheritance/inheritable_seeder"
 
 loader = Zeitwerk::Loader.for_gem
 loader.setup
+
+require_relative "json_single_table_inheritance/class_master_list"
+require_relative "json_single_table_inheritance/inheritable_seeder"
 
 module JsonSingleTableInheritance
   extend ActiveSupport::Concern
