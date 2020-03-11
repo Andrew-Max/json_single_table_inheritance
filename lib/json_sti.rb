@@ -60,7 +60,7 @@ module JsonSti
                     presence: false,
                     json: {
                       message: ->(errors) { errors },
-                      schema: lambda { cleaned_schema }
+                      schema: lambda { self.class::SCHEMA }
                     }
 
           # a helper similar to ARs `where` only for json fields
@@ -80,26 +80,6 @@ module JsonSti
             end
           end
 
-          private
-
-          def cleaned_schema
-            schema = self.class::SCHEMA.to_json
-
-            hash_schema = JSON.parse(schema)
-            properties = hash_schema["properties"]
-            required = schema['required']
-
-            properties.each do |property, value|
-              unless self.module_data[property]
-                unless required.include?(property)
-                  properties.delete property
-                end
-              end
-            end
-
-            hash_schema["properties"] = properties
-            hash_schema.to_json
-          end
         end
       end
 

@@ -48,9 +48,7 @@ describe JsonSti::InheritableSeeder do
         expect(sub_b.apple).to     be_a(Float)
         expect(sub_b.brain).to     eq(nil)
 
-        expect(sub_b.chamomile).to be_a(String)
-        parsed_date = Date.strptime(sub_b.chamomile, '%Y-%m-%d')
-        expect(parsed_date).to be_a(Date)
+        expect(sub_b.chamomile).to be_a(Date)
 
         expect(sub_c.dog).to       eq(nil)
         expect(sub_c.emigrate).to  be_a(String)
@@ -58,10 +56,7 @@ describe JsonSti::InheritableSeeder do
         expect(sub_d.forest).to    eq(nil)
         expect(sub_d.great).to     be_a(Integer)
 
-        expect(sub_e.hello).to     be_a(String)
-        parsed_time = parsed_time = DateTime.strptime(sub_e.hello, '%Y-%m-%dT%H:%M:%S')
-
-        expect(parsed_time).to     be_a(DateTime)
+        expect(sub_e.hello).to     be_a(Time)
         expect(sub_e.indigo).to    eq(nil)
       end
     end
