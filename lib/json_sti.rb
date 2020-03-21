@@ -63,8 +63,18 @@ module JsonSti
                       schema: lambda { self.class::SCHEMA }
                     }
 
+          # handles bug in ransackable where 1 is converted to true
+          def self.clean_val_aa(val)
+            val.is_a?(TrueClass) ? 1 : val
+          end
+
           # a helper similar to ARs `where` only for json fields
-          scope :jwhere, lambda { |hash| where("module_data @> ?", hash.to_json) }
+          scope :j_where, lambda { |hash| where("module_data @> ?", hash.to_json) }
+          scope :j_like_key, lambda { |key, value| where("module_data ->> :key LIKE :value",key: key, value: "%#{value}%") }
+          scope :j_gt, lambda { |prop, val|  where("module_data ->> '#{prop}' > ?", "#{clean_val_aa(val).to_f}") }
+          scope :j_lt, lambda { |prop, val|  where("module_data ->> '#{prop}' < ?", "#{clean_val_aa(val).to_f}" ) }
+          scope :j_gte, lambda { |prop, val|  where("module_data ->> '#{prop}' >= ?", "#{clean_val_aa(val).to_f}") }
+          scope :j_lte, lambda { |prop, val|  where("module_data ->> '#{prop}' <= ?", "#{clean_val_aa(val).to_f}" ) }
 
           def initialize(params)
             super
@@ -79,7 +89,6 @@ module JsonSti
               end
             end
           end
-
         end
       end
 
@@ -101,6 +110,76 @@ module JsonSti
 
         initialize_attr_getters(json_attrs.keys)
         initialize_attr_setters(json_attrs.keys)
+
+        #creates methods required for ransackables searches in active admin
+        class << self
+          self.class_variable_get(:@@json_attrs).each do |prop, type|
+            if type["type"].include?("string")
+              define_method "#{prop}_equals" do |value|
+                self.j_where(Hash[prop, value])
+              end
+
+              define_method "#{prop}_contains" do |value|
+                self.j_like_key(prop, value)
+              end
+            elsif type["type"].include?("integer")
+              define_method "#{prop}_equals" do |value|
+                self.j_where(Hash[prop, value.to_i])
+              end
+
+              define_method "#{prop}_greater_than" do |value|
+                self.j_gt(prop, value)
+              end
+
+              define_method "#{prop}_less_than" do |value|
+                self.j_lt(prop, value)
+              end
+            elsif type["type"].include?("number")
+              define_method "#{prop}_equals" do |value|
+                self.j_where(Hash[prop, clean_val_aa(value).to_f])
+              end
+
+              define_method "#{prop}_greater_than" do |value|
+                self.j_gt(prop, value)
+              end
+
+              define_method "#{prop}_less_than" do |value|
+                self.j_lt(prop, value)
+              end
+            elsif type["type"].include?("boolean")
+              # todo figure this out in for select, eq for checkboxes or viceversa
+              # define_method "#{prop}_in" do |*value|
+              #   self.j_where(Hash[prop, value])
+              # end
+            end
+          end
+
+          define_method "ransackable_scopes" do |_auth_object = nil|
+            scopes = []
+
+            ransackable_string_query_types = %i(equals contains)
+            self.class_variable_get(:@@json_attrs).each do |prop, type|
+              if type["type"].include?("string")
+                ransackable_string_query_types.each do |ransackable_query_type|
+                  scopes.push "#{prop}_#{ransackable_query_type}"
+                end
+              elsif type["type"].include?("integer")
+                scopes.push "#{prop}_equals"
+                scopes.push "#{prop}_greater_than"
+                scopes.push "#{prop}_less_than"
+              elsif type["type"].include?("number")
+                scopes.push "#{prop}_equals"
+                scopes.push "#{prop}_greater_than"
+                scopes.push "#{prop}_less_than"
+              elsif type["type"].include?("boolean")
+                # todo figure this out in for select, eq for checkboxes or viceversa
+                # scopes.push "#{prop}_in"
+              end
+            end
+
+            scopes
+          end
+        end
       end
     end
 
