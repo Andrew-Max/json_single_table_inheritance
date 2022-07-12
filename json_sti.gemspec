@@ -28,7 +28,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'pry-byebug', '~> 3.7'
   spec.add_dependency 'faker', '~> 2.7'
-  spec.add_dependency 'activerecord', '>= 4.2.0', '< 7'
+  spec.add_dependency 'activerecord', '>= 4.2.0', '< 8'
   spec.add_dependency 'activesupport', '>= 4.2.0', '< 7'
   spec.add_dependency 'pg', '~> 1.1'
   spec.add_dependency 'zeitwerk', '~> 2.2'
